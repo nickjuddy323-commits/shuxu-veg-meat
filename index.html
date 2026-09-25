@@ -1,0 +1,623 @@
+<!-- AI生成 -->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>蔬序 · 时令蔬肉志</title>
+  <meta name="description" content="蔬菜肉类有什么营养、什么时候最好吃——面向长辈、青年、学生的时令蔬肉指南：挑选、保存、控卡、荤素搭配。" />
+  <meta name="theme-color" content="#f3efe6" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+<p data-aigc-mark="1" style="margin:0 0 8px;font-size:10px;line-height:1.3;color:#6b6560;font-weight:400;">AI生成</p>
+
+
+  <div class="grain" aria-hidden="true"></div>
+
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="logo" href="#top" aria-label="蔬序首页">
+        <span class="logo-mark" aria-hidden="true"></span>
+        <span class="logo-text">蔬序</span>
+        <span class="logo-sub">时令蔬肉志</span>
+      </a>
+
+      <button class="nav-toggle" id="nav-toggle" type="button" aria-label="打开菜单" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+
+      <nav class="nav" id="site-nav" aria-label="主导航">
+        <a href="#today">今日</a>
+        <a href="#elder">长辈</a>
+        <a href="#younger">青年</a>
+        <a href="#student">学生</a>
+        <a href="#seasons">时令</a>
+        <a href="#benefits">营养</a>
+        <a href="#diet">控卡</a>
+        <a href="#compare">对比</a>
+        <a href="#atlas">图鉴</a>
+        <a href="#tips">挑选</a>
+      </nav>
+
+      <div class="header-actions">
+        <div class="font-switch" role="group" aria-label="字体大小">
+          <button type="button" data-font="md" class="is-active" title="标准字号">字</button>
+          <button type="button" data-font="lg" title="大号字体">大</button>
+          <button type="button" data-font="xl" title="特大字体">特</button>
+        </div>
+        <button class="btn-ghost" id="btn-favorites" type="button" title="查看收藏">
+          收藏 <span id="fav-count">0</span>
+        </button>
+        <button class="btn-primary sm" id="btn-random" type="button">随缘一份</button>
+      </div>
+    </div>
+  </header>
+
+  <main id="top">
+    <!-- HERO -->
+    <section class="hero">
+      <div class="container hero-grid">
+        <div class="hero-copy">
+          <p class="eyebrow">Seasonal Veg &amp; Meat Almanac</p>
+          <h1>蔬菜和肉都有什么用，<br /><em>什么时候吃最好？</em></h1>
+          <p class="lead">
+            蔬序把常见蔬菜、肉类与豆制品的营养、应季时间、控卡提示和挑选保存方法收在一页里。
+            长辈、青年、学生都有对应场景；顶部还能放大字体，看得更清楚。
+          </p>
+          <div class="hero-actions">
+            <a class="btn-primary" href="#elder">长辈专区</a>
+            <a class="btn-secondary" href="#younger">青年专区</a>
+          </div>
+          <div class="hero-actions" style="margin-top:10px">
+            <a class="btn-secondary" href="#student">学生专区</a>
+            <a class="btn-secondary" href="#today">本月应季</a>
+          </div>
+          <dl class="hero-stats">
+            <div>
+              <dt id="stat-items">—</dt>
+              <dd>种蔬肉豆品</dd>
+            </div>
+            <div>
+              <dt id="stat-benefits">—</dt>
+              <dd>类营养标签</dd>
+            </div>
+            <div>
+              <dt id="stat-peak">—</dt>
+              <dd>本月应季</dd>
+            </div>
+          </dl>
+        </div>
+
+        <div class="hero-visual">
+          <div class="orbit" id="orbit" aria-label="本月应季蔬肉转盘">
+            <div class="orbit-ring"></div>
+            <div class="orbit-core">
+              <span class="core-month" id="core-month">9月</span>
+              <span class="core-label" id="core-label">本月应季</span>
+            </div>
+            <div class="orbit-items" id="orbit-items"></div>
+          </div>
+
+          <aside class="daily-card" id="daily-card">
+            <div class="daily-label">今日鲜选</div>
+            <div class="daily-row">
+              <div class="daily-emoji" id="daily-emoji">🥬</div>
+              <div>
+                <h3 id="daily-name">菠菜</h3>
+                <p id="daily-brief">叶酸与铁的好来源，快炒或做汤都出彩。</p>
+              </div>
+            </div>
+            <button class="btn-secondary sm" id="btn-daily" type="button">看看详情</button>
+          </aside>
+        </div>
+      </div>
+    </section>
+
+    <!-- TODAY -->
+    <section class="section today-section" id="today">
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">This Month</p>
+            <h2>本月应季</h2>
+            <p class="section-desc">按自然月自动推荐。当季蔬菜风味更足，肉类也更适合按气候调整部位与做法。</p>
+          </div>
+          <div class="month-picker" id="month-picker" role="tablist" aria-label="选择月份"></div>
+        </div>
+        <div class="today-grid" id="today-grid"></div>
+      </div>
+    </section>
+
+    <!-- SEASONS -->
+    <section class="section seasons-section" id="seasons">
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Seasons</p>
+            <h2>四季蔬肉时令</h2>
+            <p class="section-desc">点一个季节，看看这个时节该吃什么。同一颗菜有时跨季，也有最鲜的那几周。</p>
+          </div>
+        </div>
+
+        <div class="season-tabs" role="tablist" aria-label="季节">
+          <button class="season-tab is-active" data-season="spring" role="tab" aria-selected="true">
+            <span class="season-dot spring"></span>春
+          </button>
+          <button class="season-tab" data-season="summer" role="tab" aria-selected="false">
+            <span class="season-dot summer"></span>夏
+          </button>
+          <button class="season-tab" data-season="autumn" role="tab" aria-selected="false">
+            <span class="season-dot autumn"></span>秋
+          </button>
+          <button class="season-tab" data-season="winter" role="tab" aria-selected="false">
+            <span class="season-dot winter"></span>冬
+          </button>
+        </div>
+
+        <div class="season-panel" id="season-panel">
+          <div class="season-intro" id="season-intro"></div>
+          <div class="item-chips" id="season-items"></div>
+        </div>
+
+        <div class="year-map" aria-label="十二个月时令分布">
+          <div class="year-map-head">
+            <h3>十二个月 · 时令分布</h3>
+            <p>颜色越深代表当月应季蔬肉越多。点月份可跳到推荐。</p>
+          </div>
+          <div class="year-grid" id="year-grid"></div>
+          <div class="year-legend">
+            <span><i class="lg spring"></i>春 3–5</span>
+            <span><i class="lg summer"></i>夏 6–8</span>
+            <span><i class="lg autumn"></i>秋 9–11</span>
+            <span><i class="lg winter"></i>冬 12–2</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- BENEFITS -->
+    <section class="section benefits-section" id="benefits">
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Nutrition</p>
+            <h2>蔬肉有什么营养</h2>
+            <p class="section-desc">从优质蛋白、膳食纤维到补铁补钙——按你在意的营养筛选。描述参考常见营养常识，不能代替医嘱。</p>
+          </div>
+        </div>
+
+        <div class="benefit-filter" id="benefit-filter" role="group" aria-label="营养筛选"></div>
+        <div class="benefit-result-bar">
+          <p id="benefit-result-text">选择上方标签，查看对应蔬肉。</p>
+          <button class="btn-ghost sm" id="btn-clear-benefit" type="button">清除筛选</button>
+        </div>
+        <div class="item-grid" id="benefit-grid"></div>
+      </div>
+    </section>
+
+    <!-- ATLAS -->
+    <section class="section atlas-section" id="atlas">
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Veg &amp; Meat Atlas</p>
+            <h2>蔬肉图鉴</h2>
+            <p class="section-desc">点开卡片，看营养、最佳季节、热量提示、部位与挑选要点。点心形可收藏。</p>
+          </div>
+          <div class="search-wrap">
+            <input id="search-input" type="search" placeholder="搜索名称、营养关键词…" aria-label="搜索蔬肉" />
+          </div>
+        </div>
+        <div class="type-filter" id="type-filter" role="group" aria-label="类别筛选">
+          <button type="button" class="type-chip is-active" data-type="all">全部</button>
+          <button type="button" class="type-chip" data-type="veg">蔬菜</button>
+          <button type="button" class="type-chip" data-type="meat">肉蛋水产</button>
+          <button type="button" class="type-chip" data-type="soy">豆制品</button>
+        </div>
+        <div class="item-grid" id="atlas-grid"></div>
+        <p class="empty-state" id="atlas-empty" hidden>没有找到相关内容，换个关键词试试。</p>
+        <div class="favorites-panel" id="favorites-panel" hidden>
+          <h3>我的收藏</h3>
+          <div class="item-grid" id="favorites-grid"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- DIET -->
+    <section class="section diet-section" id="diet">
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Calorie-aware</p>
+            <h2>控卡控脂专区</h2>
+            <p class="section-desc">给减脂、增肌或想吃得更轻盈的人。先选热量档位，再看份量与做法提示。不能代替医嘱。</p>
+          </div>
+        </div>
+
+        <div class="diet-layout">
+          <aside class="diet-guide">
+            <h3>控卡怎么吃蔬肉</h3>
+            <ul class="guide-list">
+              <li><strong>蔬菜打底</strong>：每餐先来一拳到两拳体积的非淀粉蔬菜，饱腹又低负担。</li>
+              <li><strong>蛋白到位</strong>：每餐一掌心左右的优质蛋白（肉蛋鱼豆），维持肌肉与代谢。</li>
+              <li><strong>主食别省</strong>：选全谷杂豆，量约一拳；完全断碳容易掉肌肉、反弹更快。</li>
+              <li><strong>烹调决定热量</strong>：清蒸、白灼、炖、快炒通常比油炸、红烧、干锅更轻。</li>
+              <li><strong>警惕隐形油糖</strong>：沙拉酱、糖醋汁、火锅蘸料、烧烤刷酱都能把「清淡」变「重口」。</li>
+              <li><strong>顺序有帮助</strong>：先菜后肉再主食，血糖更稳，也不容易一下吃太多。</li>
+            </ul>
+            <div class="diet-note">医学提示：孕期、慢病、进食障碍等，请以医生 / 营养师的个性化方案为准。</div>
+          </aside>
+
+          <div class="diet-main">
+            <div class="diet-filter" id="diet-filter" role="group" aria-label="热量筛选"></div>
+            <p class="diet-result" id="diet-result"></p>
+            <div class="item-grid diet-grid" id="diet-grid"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- COMPARE -->
+    <section class="section compare-section" id="compare">
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Side by Side</p>
+            <h2>对比两样食材</h2>
+            <p class="section-desc">选两样蔬肉或豆品，并排看热量、蛋白、季节与适用场景，买之前少纠结。</p>
+          </div>
+        </div>
+
+        <div class="compare-panel">
+          <div class="compare-pickers">
+            <label class="compare-picker">
+              <span>左边</span>
+              <select id="compare-a" aria-label="选择第一样食材"></select>
+            </label>
+            <button class="btn-ghost sm" id="compare-swap" type="button" title="交换">⇄ 交换</button>
+            <label class="compare-picker">
+              <span>右边</span>
+              <select id="compare-b" aria-label="选择第二样食材"></select>
+            </label>
+            <button class="btn-primary sm" id="compare-random" type="button">随机一对</button>
+          </div>
+
+          <div class="compare-table-wrap">
+            <table class="compare-table" id="compare-table">
+              <thead>
+                <tr>
+                  <th>对比项</th>
+                  <th id="compare-a-title">A</th>
+                  <th id="compare-b-title">B</th>
+                </tr>
+              </thead>
+              <tbody id="compare-body"></tbody>
+            </table>
+          </div>
+
+          <div class="compare-verdict" id="compare-verdict"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ELDER -->
+    <section class="section elder-section" id="elder">
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">For Parents &amp; Elders</p>
+            <h2>长辈专区</h2>
+            <p class="section-desc">牙口、消化、三高、服药——挑软烂、少刺激、好入口的菜肉，吃得舒服最重要。不能代替医嘱。</p>
+          </div>
+        </div>
+
+        <div class="scenario-bar" id="elder-bar" role="group" aria-label="长辈场景"></div>
+        <p class="scenario-result" id="elder-result"></p>
+        <div class="item-grid student-grid" id="elder-grid"></div>
+
+        <div class="campus-tips elder-tips">
+          <article class="tip-card">
+            <span class="tip-num">牙口</span>
+            <h3>咬不动怎么办</h3>
+            <p>选蒸软的南瓜、山药、土豆泥、冬瓜、茄子；肉类选肉末、鱼片、蒸蛋、炖到软烂的鸡腿肉。避免干柴的瘦肉块与生硬凉拌。</p>
+          </article>
+          <article class="tip-card">
+            <span class="tip-num">服药</span>
+            <h3>吃药和吃饭要错开</h3>
+            <p><strong>维生素 K 丰富</strong>的深绿叶菜可能影响华法林等抗凝药，服药期间保持摄入稳定并遵医嘱。补铁、补钙也别和部分药物同服。</p>
+          </article>
+          <article class="tip-card">
+            <span class="tip-num">三高</span>
+            <h3>控盐控油控糖</h3>
+            <p>少腌制、少红烧糖醋。优先清蒸、炖、快炒。肥肉、动物皮、内脏要限量；蔬菜尽量占盘子一半。</p>
+          </article>
+          <article class="tip-card">
+            <span class="tip-num">消化</span>
+            <h3>胃弱怎么吃</h3>
+            <p>少量多餐，肉类切细炖烂。豆类胀气可先选豆腐、豆干而非整粒黄豆。太油、太辣、过冷过热都容易不舒服。</p>
+          </article>
+          <article class="tip-card">
+            <span class="tip-num">补蛋白</span>
+            <h3>预防肌肉流失</h3>
+            <p>每餐都要有蛋白：鸡蛋、鱼、去皮禽肉、瘦肉、豆腐。只喝粥吃咸菜，蛋白往往不够，走路也没劲。</p>
+          </article>
+          <article class="tip-card">
+            <span class="tip-num">方便</span>
+            <h3>日常好操作</h3>
+            <p>一次性炖好分装冷冻、买净菜小份、用蒸锅一锅出。减少洗切负担，也更不容易剩菜反复热。</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- YOUNGER -->
+    <section class="section younger-section" id="younger">
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Young Adults</p>
+            <h2>青年专区</h2>
+            <p class="section-desc">上班族、健身、控卡、想状态好一点——按你最近的状态挑，吃得聪明比吃得苦更有用。</p>
+          </div>
+        </div>
+
+        <div class="scenario-bar" id="younger-bar" role="group" aria-label="青年场景"></div>
+        <p class="scenario-result" id="younger-result"></p>
+        <div class="item-grid student-grid" id="younger-grid"></div>
+
+        <div class="campus-tips">
+          <article class="tip-card">
+            <span class="tip-num">办公</span>
+            <h3>工位补给</h3>
+            <p>即食鸡胸、卤蛋、无糖酸奶、小番茄、黄瓜条。比奶茶炸鸡稳，也更扛饿。外卖点「少油少盐、多蔬菜」通常有用。</p>
+          </article>
+          <article class="tip-card">
+            <span class="tip-num">健身</span>
+            <h3>训练前后一口</h3>
+            <p>练后 30–60 分钟补蛋白 + 少量碳水：鸡胸/鱼/蛋 + 米饭或红薯。增肌别怕吃，减脂优先高蛋白低油烹调。</p>
+          </article>
+          <article class="tip-card">
+            <span class="tip-num">控卡</span>
+            <h3>减脂期怎么吃</h3>
+            <p>用蒸煮炖代替油炸红烧。蔬菜放大，主食减半换杂粮，肥肉与可见脂肪去掉。别把「吃得少」当成唯一标准。</p>
+          </article>
+          <article class="tip-card">
+            <span class="tip-num">补铁</span>
+            <h3>想气色好一点</h3>
+            <p>红肉、动物血、肝脏是好铁源；搭配维 C 丰富的彩椒、番茄、西兰花吸收更好。素食者更需要搭配豆制品与深绿叶菜。</p>
+          </article>
+          <article class="tip-card">
+            <span class="tip-num">熬夜</span>
+            <h3>夜宵别硬扛</h3>
+            <p>高油高糖夜宵更困。需要垫一口时，选水煮蛋、无糖豆浆、黄瓜、小番茄。能早睡还是早睡。</p>
+          </article>
+          <article class="tip-card">
+            <span class="tip-num">分享</span>
+            <h3>合租与办公室</h3>
+            <p>买「好分、好热、不串味」的：卤牛肉切片、茶叶蛋、分装炖菜。标注日期和归属，减少室友友好损耗。</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- STUDENT -->
+    <section class="section student-section" id="student">
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Campus Life</p>
+            <h2>大学生专区</h2>
+            <p class="section-desc">宿舍没厨房？考试周只想快点补一口？预算有限也要吃对——按校园场景挑蔬肉。</p>
+          </div>
+          <button class="btn-primary" id="btn-meal-plan" type="button">生成本周宿舍菜篮</button>
+        </div>
+
+        <div class="scenario-bar" id="scenario-bar" role="group" aria-label="校园场景"></div>
+        <p class="scenario-result" id="scenario-result"></p>
+
+        <div class="basket-panel" id="basket-panel" hidden>
+          <div class="basket-head">
+            <h3>本周宿舍菜篮</h3>
+            <button class="btn-ghost sm" id="basket-close" type="button">收起</button>
+          </div>
+          <div class="basket-grid" id="basket-grid"></div>
+          <p class="basket-tip" id="basket-tip"></p>
+        </div>
+
+        <div class="item-grid student-grid" id="student-grid"></div>
+
+        <div class="campus-tips">
+          <article class="tip-card">
+            <span class="tip-num">宿舍</span>
+            <h3>没厨房怎么吃</h3>
+            <p>食堂选「一荤一素一豆」；便利店选茶叶蛋、即食鸡胸、盒装豆腐、沙拉菜。有小锅可煮：挂面 + 青菜 + 蛋，就是一顿。</p>
+          </article>
+          <article class="tip-card">
+            <span class="tip-num">一人食</span>
+            <h3>一次买多少</h3>
+            <p>蔬菜按 2–3 天买，叶菜别囤。肉类买小份冷冻分装。鸡蛋一周 7–10 个，豆腐当餐吃更省事。</p>
+          </article>
+          <article class="tip-card">
+            <span class="tip-num">省钱</span>
+            <h3>校内怎么买更省</h3>
+            <p>食堂套餐、晚市打折菜、整箱鸡蛋、冻品分装，通常更划算。当季本地菜几乎总比「精致轻食」便宜且实在。</p>
+          </article>
+          <article class="tip-card">
+            <span class="tip-num">考试周</span>
+            <h3>自习补给怎么选</h3>
+            <p>要稳定补能选鸡蛋、香蕉、全麦面包；盯屏幕久优先深绿叶菜、番茄。别用辣条泡面顶正餐，血糖冲得快容易犯困。</p>
+          </article>
+          <article class="tip-card">
+            <span class="tip-num">运动</span>
+            <h3>健身前后一口</h3>
+            <p>力量日后必须有蛋白：鸡胸、鸡蛋、牛奶、豆腐。有氧前少量碳水即可。蛋白粉是补充，不是替代饭菜。</p>
+          </article>
+          <article class="tip-card">
+            <span class="tip-num">分享</span>
+            <h3>宿舍拼单清单</h3>
+            <p>适合整份分享的：鸡蛋、冻鸡胸、土豆洋葱、豆腐、干香菇。娇气菜自己买小份即可。注明「谁买的谁先吃」。</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- FAQ -->
+    <section class="section faq-section" id="faq">
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Common Questions</p>
+            <h2>吃蔬肉的常见问题</h2>
+            <p class="section-desc">几条高频疑问，尽量讲清楚。</p>
+          </div>
+        </div>
+        <div class="faq-list">
+          <details class="faq-item" open>
+            <summary>蔬菜和水果可以互相代替吗？</summary>
+            <p>不能完全代替。蔬菜通常纤维更丰富、糖分更低，水果则提供不同的维生素与植物化学物。建议餐餐有菜，水果适量加餐。</p>
+          </details>
+          <details class="faq-item">
+            <summary>红肉是不是都不能吃？</summary>
+            <p>不必因噎废食。红肉是铁、锌、B12 的好来源，关键是频率和部位：优选瘦肉，控制加工肉制品，每周不必顿顿红肉。</p>
+          </details>
+          <details class="faq-item">
+            <summary>白肉一定比红肉更健康吗？</summary>
+            <p>各有优势。去皮禽肉、鱼虾脂肪结构通常更友好；红肉补铁更直接。多样化搭配、少油烹调，比只盯颜色更重要。</p>
+          </details>
+          <details class="faq-item">
+            <summary>减脂一定要水煮菜吗？</summary>
+            <p>不需要。长期水煮很难坚持。少油快炒、蒸、烤、凉拌、砂锅都可以。关键是总油量与总热量，不是「有没有味道」。</p>
+          </details>
+          <details class="faq-item">
+            <summary>蔬菜生吃更好吗？</summary>
+            <p>看品种。黄瓜、生菜、番茄生吃清爽；西兰花、菠菜、豆角加热后更安全也更好吸收。豆角类必须彻底做熟。</p>
+          </details>
+          <details class="faq-item">
+            <summary>一天大概吃多少蔬肉？</summary>
+            <p>常见建议：蔬菜约 300–500 克（深色占一半），蛋白质食物约 120–200 克（生重），再搭配主食与奶豆。运动量大或特殊时期可调整。</p>
+          </details>
+          <details class="faq-item">
+            <summary>生活费有限，怎么把营养吃够？</summary>
+            <p>鸡蛋、豆腐、冻鸡胸、当季根茎菜、干香菇木耳都是性价比之选。食堂打饭「半份荤半份素」，往往比零食代餐更划算也更健康。</p>
+          </details>
+        </div>
+      </div>
+    </section>
+
+    <!-- TIPS -->
+    <section class="section tips-section" id="tips">
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">How to Choose</p>
+            <h2>挑选与保存</h2>
+            <p class="section-desc">几条通用原则，买得准、放得住。</p>
+          </div>
+        </div>
+        <div class="tips-grid">
+          <article class="tip-card">
+            <span class="tip-num">01</span>
+            <h3>蔬菜看挺括与切口</h3>
+            <p>叶子挺括、根茎饱满、切口不发黑不干缩，通常更新鲜。叶菜发黄、出水、有异味就别买。</p>
+          </article>
+          <article class="tip-card">
+            <span class="tip-num">02</span>
+            <h3>肉类看色泽与弹性</h3>
+            <p>鲜肉有光泽、按压能回弹、表面微干不粘手。发暗、发绿、异味重、粘液多的不要买。</p>
+          </article>
+          <article class="tip-card">
+            <span class="tip-num">03</span>
+            <h3>叶菜先吃，根茎后吃</h3>
+            <p>菠菜生菜 1–2 天内吃；土豆洋葱胡萝卜耐放。肉类买回尽快分装冷冻，反复化冻口感和安全性都差。</p>
+          </article>
+          <article class="tip-card">
+            <span class="tip-num">04</span>
+            <h3>生熟分开，防交叉污染</h3>
+            <p>砧板刀具生熟分开。肉要彻底做熟，剩菜尽快冷藏，再次食用充分加热。</p>
+          </article>
+          <article class="tip-card">
+            <span class="tip-num">05</span>
+            <h3>冷冻肉别泡热水化冻</h3>
+            <p>冷藏缓慢化冻或微波解冻更稳妥。室温久放容易滋生细菌，外面熟了里面还冰着也不安全。</p>
+          </article>
+          <article class="tip-card">
+            <span class="tip-num">06</span>
+            <h3>切好再洗 vs 洗好再切</h3>
+            <p>一般建议先洗后切，减少水溶性维生素流失。切开的蔬菜尽快下锅，别长时间泡在水里。</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="section closing-section">
+      <div class="container closing-card">
+        <div>
+          <p class="eyebrow">Eat with the Season</p>
+          <h2>顺着时令吃，菜篮子更省心。</h2>
+          <p>把这一页收藏起来，买菜前先扫一眼；点卡片上的小红心收藏喜欢的食材，也可以用「随缘一份」给自己一点小惊喜。</p>
+        </div>
+        <div class="closing-actions">
+          <button class="btn-primary" id="btn-random-2" type="button">随缘一份</button>
+          <a class="btn-secondary" href="#top">回到顶部</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <div class="footer-brand">
+        <span class="logo-mark" aria-hidden="true"></span>
+        <div>
+          <strong>蔬序 · 时令蔬肉志</strong>
+          <p>好食材，吃对时候。</p>
+        </div>
+      </div>
+      <p class="footer-note">内容为科普参考，不构成医疗建议。特殊体质、控卡或疾病饮食请遵医嘱。</p>
+    </div>
+  </footer>
+
+  <button class="to-top" id="to-top" type="button" aria-label="回到顶部">↑</button>
+
+  <!-- Modal -->
+  <div class="modal" id="item-modal" hidden>
+    <div class="modal-backdrop" data-close-modal></div>
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+      <button class="modal-close" type="button" data-close-modal aria-label="关闭">×</button>
+      <div class="modal-hero" id="modal-hero">
+        <div class="modal-emoji" id="modal-emoji">🥬</div>
+        <div>
+          <p class="modal-seasons" id="modal-seasons"></p>
+          <h3 id="modal-title">食材</h3>
+          <p class="modal-en" id="modal-en"></p>
+        </div>
+        <button class="fav-btn" id="modal-fav" type="button" aria-label="收藏">♡</button>
+      </div>
+      <div class="modal-body">
+        <div class="modal-block">
+          <h4>主要营养</h4>
+          <ul id="modal-benefits" class="benefit-list"></ul>
+        </div>
+        <div class="modal-block">
+          <h4>什么时候吃最好</h4>
+          <p id="modal-season-text"></p>
+        </div>
+        <div class="modal-block">
+          <h4>怎么吃更好</h4>
+          <p id="modal-pairing"></p>
+        </div>
+        <div class="modal-block">
+          <h4>挑选与保存</h4>
+          <p id="modal-tips"></p>
+        </div>
+        <div class="modal-meta" id="modal-meta"></div>
+        <div class="modal-tags" id="modal-tags"></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
