@@ -1350,6 +1350,351 @@
     panel.hidden = false;
   }
 
+  // ---------- cooking methods / kitchen map ----------
+  const METHOD_HINTS = {
+    快手: ["快炒", "快手", "即食", "凉拌", "生食", "便携"],
+    清炒: ["快炒", "清口", "家常", "脆甜"],
+    炖煮: ["炖煮", "煲汤", "软糯", "软烂", "炖菜", "卤味", "香浓"],
+    蒸烤: ["软糯", "软烂", "养胃", "清口", "低卡"],
+    凉拌: ["清爽", "生食", "低卡", "清口", "解腻"],
+    煲汤: ["煲汤", "清淡", "养胃", "补水", "炖菜"],
+    卤味: ["卤味", "卤制", "便携", "切片", "风味"],
+    便当: ["便携", "耐放", "好分", "即食", "性价比"]
+  };
+
+  let activeMethod = null;
+
+  function renderMethodShelf() {
+    const box = $("#method-shelf");
+    if (!box) return;
+    box.onclick = (e) => {
+      const btn = e.target.closest("[data-method]");
+      if (!btn) return;
+      const method = btn.getAttribute("data-method");
+      activeMethod = activeMethod === method ? null : method;
+      $$(".method-link", box).forEach((b) => b.classList.toggle("is-active", b.getAttribute("data-method") === activeMethod));
+      if (activeMethod) {
+        const hints = METHOD_HINTS[activeMethod] || [];
+        const list = ITEMS.filter((it) =>
+          hints.some((h) => (it.tags || []).some((t) => t.includes(h)) || it.brief.includes(h) || it.pairing.includes(h))
+        );
+        renderCards($("#benefit-grid"), (list.length ? list : ITEMS).slice(0, 12));
+        bindCardClicks($("#benefit-grid"));
+        const text = $("#benefit-result-text");
+        if (text) text.textContent = activeMethod ? `按做法「${activeMethod}」：推荐 ${Math.min(list.length, 12)} 样。` : "选择上方标签，查看对应蔬肉。";
+        const benefits = $("#benefits");
+        if (benefits) benefits.scrollIntoView({ behavior: "smooth", block: "start" });
+      } else {
+        renderBenefitGrid();
+      }
+    };
+  }
+
+  // ---------- fridge (开冰箱) ----------
+  const fridgeSelected = new Set();
+
+  function renderFridge() {
+    const box = $("#fridge-chips");
+    if (!box) return;
+    box.innerHTML = ITEMS.map(
+      (it) =>
+        `<button type="button" class="fridge-chip ${fridgeSelected.has(it.id) ? "is-on" : ""}" data-fridge="${it.id}">${it.emoji} ${it.name}</button>`
+    ).join("");
+
+    box.onclick = (e) => {
+      const chip = e.target.closest("[data-fridge]");
+      if (!chip) return;
+      const id = chip.getAttribute("data-fridge");
+      if (fridgeSelected.has(id)) fridgeSelected.delete(id);
+      else fridgeSelected.add(id);
+      chip.classList.toggle("is-on", fridgeSelected.has(id));
+    };
+
+    const matchBtn = $("#fridge-match");
+    const clearBtn = $("#fridge-clear");
+    const fillBtn = $("#fridge-fill");
+
+    if (matchBtn) {
+      matchBtn.onclick = () => {
+        const picked = [...fridgeSelected].map(getItem).filter(Boolean);
+        const result = $("#fridge-result");
+        const grid = $("#fridge-grid");
+        if (!picked.length) {
+          if (result) result.textContent = "先勾选已有食材，再点「反查搭配」。";
+          if (grid) grid.innerHTML = "";
+          return;
+        }
+
+        const pickedIds = new Set(picked.map((p) => p.id));
+        const typeSet = new Set(picked.map((p) => p.type));
+        const benefitSet = new Set(picked.flatMap((p) => p.benefits));
+        const hasProtein = picked.some((p) => p.type === "meat" || p.type === "soy");
+        const hasVeg = picked.some((p) => p.type === "veg");
+
+        const scored = ITEMS.filter((it) => !pickedIds.has(it.id)).map((it) => {
+          let score = 0;
+          if (typeSet.has(it.type)) score += 1;
+          score += it.benefits.filter((b) => benefitSet.has(b)).length;
+          if (hasVeg && (it.type === "meat" || it.type === "soy")) score += 2;
+          if (hasProtein && it.type === "veg") score += 2;
+          if (it.benefits.includes("优质蛋白") || it.benefits.includes("植物蛋白")) score += 1;
+          return { it, score };
+        });
+
+        scored.sort((a, b) => b.score - a.score);
+        const list = scored.slice(0, 8).map((s) => s.it);
+
+        let tip = `已选 ${picked.map((p) => p.name).join("、")}。`;
+        if (!hasProtein) tip += " 建议补一份蛋白（肉蛋鱼豆）。";
+        else if (!hasVeg) tip += " 建议再搭一两样蔬菜，营养更完整。";
+        else tip += " 荤素都有了，再补一样主食或耐放根茎就稳了。";
+
+        if (result) result.textContent = tip;
+        renderCards(grid, list);
+        bindCardClicks(grid);
+      };
+    }
+
+    if (clearBtn) {
+      clearBtn.onclick = () => {
+        fridgeSelected.clear();
+        renderFridge();
+        const result = $("#fridge-result");
+        const grid = $("#fridge-grid");
+        if (result) result.textContent = "先勾选已有食材，再点「反查搭配」。";
+        if (grid) grid.innerHTML = "";
+      };
+    }
+
+    if (fillBtn) {
+      fillBtn.onclick = () => {
+        fridgeSelected.clear();
+        for (let i = 0; i < 3; i++) {
+          fridgeSelected.add(ITEMS[Math.floor(Math.random() * ITEMS.length)].id);
+        }
+        renderFridge();
+      };
+    }
+  }
+
+  // ---------- spin (转一转) ----------
+  let spinFilter = "all";
+
+  function renderSpin() {
+    const filters = $("#spin-filters");
+    const wheel = $("#spin-wheel");
+    const face = $("#spin-face");
+    const go = $("#spin-go");
+    const resultBox = $("#spin-result");
+    const grid = $("#spin-grid");
+    if (!go) return;
+
+    if (filters) {
+      filters.onclick = (e) => {
+        const chip = e.target.closest("[data-spin]");
+        if (!chip) return;
+        spinFilter = chip.getAttribute("data-spin");
+        $$(".spin-filter", filters).forEach((c) => c.classList.toggle("is-active", c === chip));
+      };
+    }
+
+    go.onclick = () => {
+      let pool = ITEMS.slice();
+      if (spinFilter === "low") pool = pool.filter((it) => it.calLevel === "low");
+      else if (spinFilter !== "all") pool = pool.filter((it) => it.type === spinFilter);
+      if (!pool.length) pool = ITEMS.slice();
+
+      const pick = pool[Math.floor(Math.random() * pool.length)];
+      if (wheel) {
+        wheel.classList.remove("is-spinning");
+        void wheel.offsetWidth;
+        wheel.classList.add("is-spinning");
+      }
+      if (face) face.textContent = pick.emoji;
+      if (resultBox) resultBox.hidden = false;
+      renderCards(grid, [pick]);
+      bindCardClicks(grid);
+    };
+  }
+
+  // ---------- weekly meal plan ----------
+  const DAYS = ["周一", "周二", "周三", "周四", "周五", "周六", "周日"];
+  const MEAL_KEY = "shuxu-meal-plan";
+  let mealPlan = loadMealPlan();
+  let mealActiveDay = null;
+
+  function loadMealPlan() {
+    try {
+      const raw = localStorage.getItem(MEAL_KEY);
+      return raw ? JSON.parse(raw) : {};
+    } catch (e) {
+      return {};
+    }
+  }
+
+  function saveMealPlan() {
+    localStorage.setItem(MEAL_KEY, JSON.stringify(mealPlan));
+  }
+
+  function todayIndex() {
+    const d = new Date().getDay();
+    return d === 0 ? 6 : d - 1;
+  }
+
+  function renderMealPlan() {
+    const grid = $("#meal-grid");
+    const countEl = $("#meal-count");
+    if (!grid) return;
+
+    const today = todayIndex();
+    grid.innerHTML = DAYS.map((day, i) => {
+      const ids = mealPlan[i] || [];
+      const items = ids.map(getItem).filter(Boolean);
+      return `
+        <div class="meal-slot ${i === today ? "is-today" : ""}" data-day="${i}">
+          <div class="meal-slot-top">
+            <strong>${day}</strong>
+            ${items.length ? `<button type="button" class="meal-clear-day" data-clear-day="${i}" aria-label="清空${day}">×</button>` : ""}
+          </div>
+          <div class="meal-items">
+            ${
+              items.length
+                ? items.map((it) => `<div class="meal-item"><span>${it.emoji}</span><span>${it.name}</span></div>`).join("")
+                : `<div class="meal-item" style="opacity:.55">未安排</div>`
+            }
+          </div>
+          <button type="button" class="meal-add" data-add-day="${i}">+ 选菜</button>
+        </div>
+      `;
+    }).join("");
+
+    const filled = Object.values(mealPlan).filter((arr) => arr && arr.length).length;
+    if (countEl) countEl.textContent = String(filled);
+
+    grid.onclick = (e) => {
+      const clearBtn = e.target.closest("[data-clear-day]");
+      if (clearBtn) {
+        const day = clearBtn.getAttribute("data-clear-day");
+        delete mealPlan[day];
+        saveMealPlan();
+        renderMealPlan();
+        return;
+      }
+      const addBtn = e.target.closest("[data-add-day]");
+      if (addBtn) {
+        mealActiveDay = addBtn.getAttribute("data-add-day");
+        openMealPicker();
+      }
+    };
+  }
+
+  function openMealPicker() {
+    let panel = $("#meal-picker");
+    if (!panel) {
+      panel = document.createElement("div");
+      panel.id = "meal-picker";
+      panel.className = "meal-picker-wrap";
+      const host = $("#meal");
+      const container = host && host.querySelector(".container");
+      if (container) container.appendChild(panel);
+      else return;
+    }
+
+    const today = todayIndex();
+    const dayLabel = DAYS[Number(mealActiveDay)];
+    panel.innerHTML = `
+      <h3 class="meal-picker-title">给${dayLabel}选 2–4 样（点选，可多选后关闭）</h3>
+      <div class="meal-picker">
+        ${ITEMS.map(
+          (it) => `<button type="button" class="meal-pick" data-meal-pick="${it.id}">${it.emoji} ${it.name}</button>`
+        ).join("")}
+      </div>
+      <div class="fridge-actions" style="margin-top:1rem">
+        <button type="button" class="btn-primary sm" id="meal-picker-done">好了</button>
+        <button type="button" class="btn-ghost sm" id="meal-picker-cancel">取消</button>
+      </div>
+    `;
+    panel.hidden = false;
+
+    const done = $("#meal-picker-done");
+    const cancel = $("#meal-picker-cancel");
+    if (done) done.onclick = () => {
+      panel.hidden = true;
+      renderMealPlan();
+    };
+    if (cancel) cancel.onclick = () => {
+      panel.hidden = true;
+    };
+
+    panel.onclick = (e) => {
+      const pick = e.target.closest("[data-meal-pick]");
+      if (!pick) return;
+      const id = pick.getAttribute("data-meal-pick");
+      const day = String(mealActiveDay);
+      if (!mealPlan[day]) mealPlan[day] = [];
+      const arr = mealPlan[day];
+      const idx = arr.indexOf(id);
+      if (idx >= 0) arr.splice(idx, 1);
+      else if (arr.length < 4) arr.push(id);
+      saveMealPlan();
+      pick.classList.toggle("is-on", arr.includes(id));
+    };
+
+    // mark already selected
+    const selected = new Set(mealPlan[String(mealActiveDay)] || []);
+    panel.querySelectorAll("[data-meal-pick]").forEach((btn) => {
+      btn.classList.toggle("is-on", selected.has(btn.getAttribute("data-meal-pick")));
+    });
+  }
+
+  function bindMealActions() {
+    const fill = $("#meal-fill");
+    const clear = $("#meal-clear");
+    if (fill) {
+      fill.onclick = () => {
+        for (let i = 0; i < 7; i++) {
+          if (mealPlan[i] && mealPlan[i].length) continue;
+          const vegs = ITEMS.filter((it) => it.type === "veg");
+          const proteins = ITEMS.filter((it) => it.type === "meat" || it.type === "soy");
+          const soyOrLight = ITEMS.filter((it) => it.type === "soy" || it.calLevel === "low");
+          mealPlan[i] = [
+            vegs[Math.floor(Math.random() * vegs.length)].id,
+            proteins[Math.floor(Math.random() * proteins.length)].id,
+            soyOrLight[Math.floor(Math.random() * soyOrLight.length)].id
+          ];
+        }
+        saveMealPlan();
+        renderMealPlan();
+      };
+    }
+    if (clear) {
+      clear.onclick = () => {
+        mealPlan = {};
+        saveMealPlan();
+        renderMealPlan();
+      };
+    }
+  }
+
+  function bindPlayTabs() {
+    const tabs = $$(".kitchen-tab");
+    tabs.forEach((tab) => {
+      tab.addEventListener("click", () => {
+        tabs.forEach((t) => {
+          t.classList.remove("is-active");
+          t.setAttribute("aria-selected", "false");
+        });
+        tab.classList.add("is-active");
+        tab.setAttribute("aria-selected", "true");
+        const which = tab.getAttribute("data-play");
+        const fridge = $("#fridge-panel");
+        const spin = $("#spin-panel");
+        if (fridge) fridge.hidden = which !== "fridge";
+        if (spin) spin.hidden = which !== "spin";
+      });
+    });
+  }
+
   // ---------- random / font / nav / to-top ----------
   function randomItem() {
     const it = ITEMS[Math.floor(Math.random() * ITEMS.length)];
@@ -1447,6 +1792,13 @@
 
     renderCompareOptions();
     renderAllScenarios();
+
+    renderMethodShelf();
+    renderFridge();
+    renderSpin();
+    bindPlayTabs();
+    renderMealPlan();
+    bindMealActions();
 
     updateHeroStats();
     saveFavorites();

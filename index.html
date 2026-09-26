@@ -28,6 +28,8 @@
       </button>
 
       <nav class="nav" id="site-nav" aria-label="主导航">
+        <a href="#play">开冰箱</a>
+        <a href="#meal">周菜单</a>
         <a href="#today">今日</a>
         <a href="#elder">长辈</a>
         <a href="#younger">青年</a>
@@ -66,11 +68,11 @@
             长辈、青年、学生都有对应场景；顶部还能放大字体，看得更清楚。
           </p>
           <div class="hero-actions">
-            <a class="btn-primary" href="#elder">长辈专区</a>
-            <a class="btn-secondary" href="#younger">青年专区</a>
+            <a class="btn-primary" href="#play">开冰箱反查</a>
+            <a class="btn-secondary" href="#elder">长辈专区</a>
           </div>
           <div class="hero-actions" style="margin-top:10px">
-            <a class="btn-secondary" href="#student">学生专区</a>
+            <a class="btn-secondary" href="#meal">周菜篮</a>
             <a class="btn-secondary" href="#today">本月应季</a>
           </div>
           <dl class="hero-stats">
@@ -111,6 +113,146 @@
             <button class="btn-secondary sm" id="btn-daily" type="button">看看详情</button>
           </aside>
         </div>
+      </div>
+    </section>
+
+    <!-- KITCHEN MAP -->
+    <section class="section kitchen-map-section" id="map">
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Kitchen Map</p>
+            <h2>四条路，都能开饭</h2>
+            <p class="section-desc">按时令、按营养、按场景、看冰箱——少翻页，先定怎么找，再决定吃什么。</p>
+          </div>
+        </div>
+        <div class="path-grid">
+          <a class="path-card is-leaf" href="#today">
+            <div class="path-top">
+              <p class="path-eyebrow">01 · 按时令</p>
+              <span class="path-meta">本月推荐</span>
+            </div>
+            <h3>今天什么最新鲜？</h3>
+            <p>跟着月份买菜买肉，风味更足，也常常更划算。</p>
+            <span class="path-go">看本月应季 →</span>
+          </a>
+          <a class="path-card is-chili" href="#benefits">
+            <div class="path-top">
+              <p class="path-eyebrow">02 · 按营养</p>
+              <span class="path-meta">13 类标签</span>
+            </div>
+            <h3>这口要补什么？</h3>
+            <p>优质蛋白、补铁、膳食纤维、护眼……按目标筛食材。</p>
+            <span class="path-go">按营养筛选 →</span>
+          </a>
+          <a class="path-card is-ink" href="#younger">
+            <div class="path-top">
+              <p class="path-eyebrow">03 · 按场景</p>
+              <span class="path-meta">人群专区</span>
+            </div>
+            <h3>给谁吃、怎么吃？</h3>
+            <p>长辈软烂、健身增肌、学生省钱——按处境选更准。</p>
+            <span class="path-go">进人群专区 →</span>
+          </a>
+          <a class="path-card is-pantry" href="#play">
+            <div class="path-top">
+              <p class="path-eyebrow">04 · 开冰箱</p>
+              <span class="path-meta">食材反查</span>
+            </div>
+            <h3>手边有什么做什么</h3>
+            <p>勾选现有食材反查搭配，或转一转随机一份。</p>
+            <span class="path-go">去试试 →</span>
+          </a>
+        </div>
+
+        <div class="method-shelf" aria-label="按烹调方式">
+          <div class="method-shelf-head">
+            <h3>按做法看食材</h3>
+            <span>先定烹调方式，再挑菜肉</span>
+          </div>
+          <div class="method-shelf-grid" id="method-shelf">
+            <button type="button" class="method-link" data-method="快手"><strong>快手</strong><span>10 分钟内</span></button>
+            <button type="button" class="method-link" data-method="清炒"><strong>清炒</strong><span>少油锅气</span></button>
+            <button type="button" class="method-link" data-method="炖煮"><strong>炖煮</strong><span>软烂入味</span></button>
+            <button type="button" class="method-link" data-method="蒸烤"><strong>蒸烤</strong><span>少油更轻</span></button>
+            <button type="button" class="method-link" data-method="凉拌"><strong>凉拌</strong><span>清爽解腻</span></button>
+            <button type="button" class="method-link" data-method="煲汤"><strong>煲汤</strong><span>暖胃清淡</span></button>
+            <button type="button" class="method-link" data-method="卤味"><strong>卤味</strong><span>切片分享</span></button>
+            <button type="button" class="method-link" data-method="便当"><strong>便当</strong><span>好带好分</span></button>
+          </div>
+        </div>
+
+        <div class="first-flow" aria-label="第一次来怎么用">
+          <h3>第一次来？</h3>
+          <ol>
+            <li><strong>定入口</strong><span>按时令、按营养，还是先开冰箱？</span></li>
+            <li><strong>筛一筛</strong><span>点标签、搜名字，或按做法缩小范围。</span></li>
+            <li><strong>排一周</strong><span>把想吃的拖进周菜篮，购物不纠结。</span></li>
+            <li><strong>买菜做饭</strong><span>照着卡片提示挑选保存，开火就行。</span></li>
+          </ol>
+        </div>
+      </div>
+    </section>
+
+    <!-- PLAY: 开冰箱 / 转一转 -->
+    <section class="section play-section" id="play">
+      <div class="container">
+        <div class="play-head">
+          <p class="eyebrow">Play Kitchen</p>
+          <h2>开冰箱 · 转一转</h2>
+          <p class="section-desc">勾选手边的食材反查搭配灵感，或者转一下，随机一份今天的选择。</p>
+          <div class="kitchen-tabs" role="tablist" aria-label="厨房玩法">
+            <button type="button" class="kitchen-tab is-active" data-play="fridge" role="tab" aria-selected="true">开冰箱</button>
+            <button type="button" class="kitchen-tab" data-play="spin" role="tab" aria-selected="false">转一转</button>
+          </div>
+        </div>
+
+        <div class="play-panel" id="fridge-panel">
+          <div class="fridge-chips" id="fridge-chips" role="group" aria-label="选择已有食材"></div>
+          <div class="fridge-actions">
+            <button type="button" class="btn-primary sm" id="fridge-match">反查搭配</button>
+            <button type="button" class="btn-ghost sm" id="fridge-clear">清空</button>
+            <button type="button" class="btn-secondary sm" id="fridge-fill">随缘勾 3 样</button>
+          </div>
+          <p class="fridge-result" id="fridge-result">先勾选已有食材，再点「反查搭配」。</p>
+          <div class="item-grid" id="fridge-grid"></div>
+        </div>
+
+        <div class="play-panel spin-panel" id="spin-panel" hidden>
+          <div class="spin-filters" id="spin-filters">
+            <button type="button" class="spin-filter is-active" data-spin="all">随便</button>
+            <button type="button" class="spin-filter" data-spin="veg">蔬菜</button>
+            <button type="button" class="spin-filter" data-spin="meat">肉蛋水产</button>
+            <button type="button" class="spin-filter" data-spin="soy">豆制品</button>
+            <button type="button" class="spin-filter" data-spin="low">低卡</button>
+          </div>
+          <div class="spin-wheel" id="spin-wheel" aria-live="polite">
+            <span id="spin-face">吃</span>
+          </div>
+          <button type="button" class="btn-primary spin-go" id="spin-go">转一下</button>
+          <div class="spin-result" id="spin-result" hidden>
+            <div class="item-grid" id="spin-grid"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- MEAL PLAN -->
+    <section class="section meal-section" id="meal">
+      <div class="container">
+        <div class="meal-head">
+          <div>
+            <p class="eyebrow">Meal Plan</p>
+            <h2>这周吃什么？</h2>
+            <p class="section-desc">给周一到周日排好菜篮思路，数据只保存在你的浏览器里。已排 <strong id="meal-count">0</strong>/7 天</p>
+          </div>
+          <div class="meal-actions">
+            <button type="button" class="btn-primary sm" id="meal-fill">随机填满空位</button>
+            <button type="button" class="btn-ghost sm" id="meal-clear">清空本周</button>
+          </div>
+        </div>
+        <div class="meal-grid" id="meal-grid"></div>
+        <div class="meal-tip" id="meal-tip">在某一天点「+ 选菜」，从推荐里挑 2–4 样，组成当日一荤一素一豆就很好。</div>
       </div>
     </section>
 
