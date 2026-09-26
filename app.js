@@ -1957,6 +1957,287 @@
     }
   }
 
+  // ---------- scientific wheel ----------
+  const WHEEL_KEY = "shuxu-wheel-history";
+  let wheelSpinning = false;
+
+  function loadWheelHistory() {
+    try {
+      const raw = localStorage.getItem(WHEEL_KEY);
+      return raw ? JSON.parse(raw) : [];
+    } catch (e) {
+      return [];
+    }
+  }
+
+  function saveWheelHistory(list) {
+    // keep last 21 picks (3 days worth of combos) for diversity weighting
+    localStorage.setItem(WHEEL_KEY, JSON.stringify(list.slice(-40)));
+  }
+
+  function proteinFamily(it) {
+    if (!it) return "other";
+    if (it.type === "soy") return "soy";
+    if (it.type === "veg") return "veg";
+    const t = it.tags || [];
+    if (t.includes("深海鱼") || it.id === "salmon" || it.id === "shrimp") return "seafood";
+    if (t.includes("嫩滑") || it.id === "chicken-breast" || it.id === "chicken-leg" || it.id === "duck" || it.id === "egg") return "poultry-egg";
+    if (it.id === "pork-liver") return "organ";
+    return "red-meat";
+  }
+
+  function wheelWeights() {
+    const month = new Date().getMonth() + 1;
+    const history = loadWheelHistory();
+    const recent = new Set(history.slice(-12));
+    const familyCount = { seafood: 0, "poultry-egg": 0, "red-meat": 0, soy: 0, organ: 0, veg: 0, other: 0 };
+    history.slice(-12).forEach((id) => {
+      const f = proteinFamily(getItem(id));
+      familyCount[f] = (familyCount[f] || 0) + 1;
+    });
+
+    return ITEMS.map((it) => {
+      let w = 1;
+      // seasonality
+      if (it.months.includes(month)) w *= 2.2;
+      // diversity: recently used gets down-weighted
+      if (recent.has(it.id)) w *= 0.35;
+      // protein family rotation
+      const fam = proteinFamily(it);
+      if (fam !== "veg" && familyCount[fam] >= 3) w *= 0.55;
+      // prefer lower-cal for balance slightly
+      if (it.calLevel === "high") w *= 0.75;
+      if (it.calLevel === "low") w *= 1.15;
+      return { it, w: Math.max(w, 0.08) };
+    });
+  }
+
+  function weightedPick(pool, n, filterFn) {
+    let candidates = pool.filter((x) => (!filterFn || filterFn(x.it)) && x.w > 0);
+    const picked = [];
+    for (let k = 0; k < n && candidates.length; k++) {
+      const total = candidates.reduce((s, x) => s + x.w, 0);
+      let r = Math.random() * total;
+      let idx = 0;
+      for (let i = 0; i < candidates.length; i++) {
+        r -= candidates[i].w;
+        if (r <= 0) {
+          idx = i;
+          break;
+        }
+      }
+      const chosen = candidates[idx];
+      picked.push(chosen.it);
+      candidates = candidates.filter((x) => x.it.id !== chosen.it.id);
+    }
+    return picked;
+  }
+
+  function buildSciencePlate() {
+    const pool = wheelWeights();
+    const month = new Date().getMonth() + 1;
+    const history = loadWheelHistory();
+    const recentIds = history.slice(-8);
+
+    const vegs = weightedPick(pool, 2, (it) => it.type === "veg");
+    const proteins = weightedPick(pool, 1, (it) => it.type === "meat");
+    const soyOrStaple = weightedPick(pool, 1, (it) => it.type === "soy" || it.benefits.includes("饱腹") || it.benefits.includes("性价比"));
+
+    // extra: one more colorful veg or second protein depending on calorie bias
+    let extra = weightedPick(pool, 1, (it) => it.type === "veg" && !vegs.includes(it));
+    if (!extra.length) extra = weightedPick(pool, 1, (it) => it.type === "meat" && !proteins.includes(it));
+
+    const plate = [...vegs, ...proteins, ...soyOrStaple, ...extra].filter(Boolean);
+
+    const reasons = [];
+    reasons.push("餐盘结构：蔬菜约占一半，蛋白质与豆/主食各约四分之一，符合常见「平衡餐盘」思路。");
+
+    const seasonHits = plate.filter((it) => it.months.includes(month));
+    if (seasonHits.length) {
+      reasons.push(
+        "时令加权：本月应季的「" +
+          seasonHits.map((i) => i.name).join("、") +
+          "」权重更高，风味与性价比通常更好。"
+      );
+    }
+
+    const families = [...new Set(plate.map(proteinFamily).filter((f) => f !== "veg"))];
+    if (families.length >= 2) {
+      reasons.push(
+        "蛋白轮换：组合覆盖「" +
+          families
+            .map((f) =>
+              f === "seafood"
+                ? "鱼虾水产"
+                : f === "poultry-egg"
+                  ? "禽蛋"
+                  : f === "red-meat"
+                    ? "红肉"
+                    : f === "soy"
+                      ? "豆制品"
+                      : "其他"
+            )
+            .join("、") +
+          "」，氨基酸与脂肪酸来源更丰富。"
+      );
+    }
+
+    const avoided = plate.filter((it) => recentIds.includes(it.id));
+    reasons.push(
+      avoided.length
+        ? "多样性：尽量避开你近几天已选过的食材，推动每周品种数（指南建议每周 25 种以上）。"
+        : "多样性：本次组合避开了近期重复项，帮助接近「每天 12 种、每周 25 种」的膳食目标。"
+    );
+
+    const lowCal = plate.filter((it) => it.calLevel === "low").length;
+    if (lowCal >= 2) {
+      reasons.push("热量友好：多数为热量偏低食材，减脂期也相对好安排。");
+    }
+
+    reasons.push("提示：这是科普向搭配参考，具体份量、疾病饮食请遵医嘱或注册营养师方案。");
+
+    return { plate, reasons };
+  }
+
+  function drawScienceWheel(items) {
+    const canvas = $("#science-wheel");
+    if (!canvas || !canvas.getContext) return;
+    const ctx = canvas.getContext("2d");
+    const dpr = window.devicePixelRatio || 1;
+    const size = 420;
+    canvas.width = size * dpr;
+    canvas.height = size * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+    const cx = size / 2;
+    const cy = size / 2;
+    const radius = size / 2 - 8;
+    const seg = items.length ? items.length : 8;
+    const colors = ["#6fad5c", "#c45c26", "#d4842e", "#4a7c9b", "#b84a3a", "#5a8f4e", "#9a4318", "#7aa86a"];
+
+    ctx.clearRect(0, 0, size, size);
+
+    for (let i = 0; i < seg; i++) {
+      const start = (i / seg) * Math.PI * 2 - Math.PI / 2;
+      const end = ((i + 1) / seg) * Math.PI * 2 - Math.PI / 2;
+      ctx.beginPath();
+      ctx.moveTo(cx, cy);
+      ctx.arc(cx, cy, radius, start, end);
+      ctx.closePath();
+      ctx.fillStyle = colors[i % colors.length];
+      ctx.fill();
+      ctx.strokeStyle = "rgba(255,253,248,0.55)";
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      // label
+      const mid = (start + end) / 2;
+      const lr = radius * 0.72;
+      ctx.save();
+      ctx.translate(cx + Math.cos(mid) * lr, cy + Math.sin(mid) * lr);
+      ctx.rotate(mid + Math.PI / 2);
+      ctx.fillStyle = "#fffaf3";
+      ctx.font = "bold 13px sans-serif";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText(items[i] ? items[i].name : "蔬肉", 0, 0);
+      ctx.restore();
+    }
+
+    // rim
+    ctx.beginPath();
+    ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+    ctx.strokeStyle = "rgba(30,53,40,0.18)";
+    ctx.lineWidth = 4;
+    ctx.stroke();
+  }
+
+  function renderScienceWheel() {
+    const canvas = $("#science-wheel");
+    const spinBtn = $("#wheel-spin");
+    const againBtn = $("#wheel-again");
+    const toMealBtn = $("#wheel-to-meal");
+    if (!canvas || !spinBtn) return;
+
+    // draw decorative segments first
+    const seedItems = ITEMS.filter((it) => it.months.includes(new Date().getMonth() + 1)).slice(0, 8);
+    drawScienceWheel(seedItems.length ? seedItems : ITEMS.slice(0, 8));
+
+    function spin() {
+      if (wheelSpinning) return;
+      wheelSpinning = true;
+      spinBtn.disabled = true;
+      if (againBtn) againBtn.disabled = true;
+
+      const result = buildSciencePlate();
+      // spin animation
+      const deg = 1440 + Math.floor(Math.random() * 360);
+      canvas.style.setProperty("--wheel-deg", deg + "deg");
+      canvas.classList.remove("is-spinning");
+      void canvas.offsetWidth;
+      canvas.classList.add("is-spinning");
+
+      window.setTimeout(() => {
+        drawScienceWheel(result.plate.concat(ITEMS.filter((it) => !result.plate.includes(it)).slice(0, Math.max(0, 8 - result.plate.length))));
+
+        // save history
+        const history = loadWheelHistory();
+        result.plate.forEach((it) => history.push(it.id));
+        saveWheelHistory(history);
+
+        // render result
+        $("#wheel-empty").hidden = true;
+        const out = $("#wheel-output");
+        out.hidden = false;
+        $("#wheel-title").textContent = "今日推荐 · " + result.plate.length + " 样";
+        $("#wheel-why").textContent =
+          "这组搭配按时令、餐盘比例与多样性加权抽出，可直接当作今天买菜清单的参考。点图片看详情。";
+
+        const picked = $("#wheel-picked");
+        picked.innerHTML = result.plate
+          .map(
+            (it) => `
+            <button type="button" class="wheel-pick" data-id="${it.id}">
+              <img src="${imgSrc(it)}" alt="${it.name}" loading="lazy" />
+              <strong>${it.name}</strong>
+              <span>${typeName(it.type)} · ${calLabel(it.calLevel)}</span>
+            </button>`
+          )
+          .join("");
+        picked.onclick = (e) => {
+          const btn = e.target.closest("[data-id]");
+          if (btn) openModal(btn.getAttribute("data-id"));
+        };
+
+        $("#wheel-reasons").innerHTML = result.reasons.map((r) => `<li>${r}</li>`).join("");
+
+        wheelSpinning = false;
+        spinBtn.disabled = false;
+        if (againBtn) againBtn.disabled = false;
+        spinBtn.textContent = "再转";
+      }, 2850);
+    }
+
+    spinBtn.onclick = spin;
+    if (againBtn) againBtn.onclick = spin;
+
+    if (toMealBtn) {
+      toMealBtn.onclick = () => {
+        const picks = $$("#wheel-picked [data-id]").map((b) => b.getAttribute("data-id"));
+        if (!picks.length) return;
+        const day = String(todayIndex());
+        if (!mealPlan[day]) mealPlan[day] = [];
+        picks.slice(0, 4).forEach((id) => {
+          if (!mealPlan[day].includes(id) && mealPlan[day].length < 4) mealPlan[day].push(id);
+        });
+        saveMealPlan();
+        renderMealPlan();
+        const meal = $("#meal");
+        if (meal) meal.scrollIntoView({ behavior: "smooth", block: "start" });
+      };
+    }
+  }
+
   // ---------- random / font / nav / to-top ----------
   function randomItem() {
     const it = ITEMS[Math.floor(Math.random() * ITEMS.length)];
@@ -2062,6 +2343,7 @@
     renderMealPlan();
     bindMealActions();
     renderNutritionist();
+    renderScienceWheel();
 
     updateHeroStats();
     saveFavorites();

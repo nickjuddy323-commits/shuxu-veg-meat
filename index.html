@@ -29,6 +29,7 @@
 
       <nav class="nav" id="site-nav" aria-label="主导航">
         <a href="#play">开冰箱</a>
+        <a href="#wheel">转盘</a>
         <a href="#meal">周菜单</a>
         <a href="#today">今日</a>
         <a href="#elder">长辈</a>
@@ -220,19 +221,47 @@
         </div>
 
         <div class="play-panel spin-panel" id="spin-panel" hidden>
+          <div class="spin-science">
+            <p class="eyebrow">Balanced Pick</p>
+            <h3>今日食材转盘</h3>
+            <p>依据《中国居民膳食指南》思路：食物多样、荤素搭配、因时而食。转盘会按<strong>应季加权</strong>，优先凑齐「一荤两素 + 可选豆/主食化蔬菜」，并给出搭配理由。</p>
+            <ul class="science-rules">
+              <li><strong>应季加权</strong>：当月蔬菜/肉类权重更高</li>
+              <li><strong>一荤</strong>：肉蛋水产或豆制品，补优质蛋白</li>
+              <li><strong>两素</strong>：优先深色叶菜 + 另一色蔬菜</li>
+              <li><strong>多样性</strong>：同类不重复，颜色尽量岔开</li>
+            </ul>
+          </div>
+
           <div class="spin-filters" id="spin-filters">
-            <button type="button" class="spin-filter is-active" data-spin="all">随便</button>
-            <button type="button" class="spin-filter" data-spin="veg">蔬菜</button>
-            <button type="button" class="spin-filter" data-spin="meat">肉蛋水产</button>
-            <button type="button" class="spin-filter" data-spin="soy">豆制品</button>
-            <button type="button" class="spin-filter" data-spin="low">低卡</button>
+            <button type="button" class="spin-filter is-active" data-spin="all">均衡默认</button>
+            <button type="button" class="spin-filter" data-spin="light">减脂轻食</button>
+            <button type="button" class="spin-filter" data-spin="muscle">增肌高蛋白</button>
+            <button type="button" class="spin-filter" data-spin="soft">软烂易嚼</button>
+            <button type="button" class="spin-filter" data-spin="budget">学生平价</button>
           </div>
-          <div class="spin-wheel" id="spin-wheel" aria-live="polite">
-            <span id="spin-face">吃</span>
+
+          <div class="wheel-wrap">
+            <div class="spin-wheel large" id="spin-wheel" aria-live="polite">
+              <canvas id="wheel-canvas" width="360" height="360" aria-hidden="true"></canvas>
+              <div class="wheel-center" id="spin-face">转</div>
+            </div>
+            <div class="wheel-pointer" aria-hidden="true"></div>
           </div>
-          <button type="button" class="btn-primary spin-go" id="spin-go">转一下</button>
+
+          <button type="button" class="btn-primary spin-go" id="spin-go">转一下 · 选今日食材</button>
+
           <div class="spin-result" id="spin-result" hidden>
+            <div class="spin-result-head">
+              <h3 id="spin-result-title">今日一篮</h3>
+              <p id="spin-result-reason"></p>
+            </div>
             <div class="item-grid" id="spin-grid"></div>
+            <div class="spin-rationale" id="spin-rationale"></div>
+            <div class="fridge-actions" style="margin-top:1rem">
+              <button type="button" class="btn-secondary sm" id="spin-to-meal">加入周菜篮今天</button>
+              <button type="button" class="btn-ghost sm" id="spin-again">再转一次</button>
+            </div>
           </div>
         </div>
       </div>
@@ -397,6 +426,84 @@
             <p class="diet-result" id="diet-result"></p>
             <div class="item-grid diet-grid" id="diet-grid"></div>
           </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SCIENTIFIC WHEEL -->
+    <section class="section wheel-section" id="wheel">
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Science Wheel</p>
+            <h2>今日食材科学转盘</h2>
+            <p class="section-desc">
+              不是纯随机——按「餐盘比例、时令加权、一周食物多样性、蛋白轮换」抽出今天该买的几样。
+              参考《中国居民膳食指南》：每天 12 种以上、每周 25 种以上食物。
+            </p>
+          </div>
+        </div>
+
+        <div class="wheel-layout">
+          <div class="wheel-stage">
+            <div class="wheel-wrap">
+              <div class="wheel-pointer" aria-hidden="true"></div>
+              <canvas id="science-wheel" width="420" height="420" aria-label="食材转盘"></canvas>
+              <button type="button" class="wheel-hub" id="wheel-spin">转一下</button>
+            </div>
+            <div class="wheel-legend" id="wheel-legend">
+              <span><i class="lg spring"></i>蔬菜 1/2</span>
+              <span><i class="lg summer"></i>蛋白 1/4</span>
+              <span><i class="lg winter"></i>豆/主食 1/4</span>
+            </div>
+          </div>
+
+          <div class="wheel-result" id="wheel-result">
+            <div class="wheel-empty" id="wheel-empty">
+              <div class="wheel-empty-icon">🎡</div>
+              <h3>准备好了吗？</h3>
+              <p>点击转盘中心「转一下」，生成一份有依据的今日食材组合。</p>
+            </div>
+            <div id="wheel-output" hidden>
+              <div class="wheel-result-head">
+                <p class="eyebrow">Today&rsquo;s Plate</p>
+                <h3 id="wheel-title">今日推荐组合</h3>
+                <p id="wheel-why" class="wheel-why"></p>
+              </div>
+              <div class="wheel-picked" id="wheel-picked"></div>
+              <div class="wheel-science">
+                <h4>为什么这样搭？</h4>
+                <ul id="wheel-reasons" class="benefit-list"></ul>
+              </div>
+              <div class="wheel-actions">
+                <button type="button" class="btn-primary sm" id="wheel-again">再转一次</button>
+                <button type="button" class="btn-secondary sm" id="wheel-to-meal">加入周菜单</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="science-cards" aria-label="科学依据">
+          <article class="science-card">
+            <span class="science-num">01</span>
+            <h3>餐盘比例</h3>
+            <p>蔬菜约 1/2、蛋白质约 1/4、豆制品或主食类约 1/4。先保证结构，再谈口味。</p>
+          </article>
+          <article class="science-card">
+            <span class="science-num">02</span>
+            <h3>时令加权</h3>
+            <p>当月应季食材权重更高——风味更足，通常也更便宜、营养更完整。</p>
+          </article>
+          <article class="science-card">
+            <span class="science-num">03</span>
+            <h3>一周多样</h3>
+            <p>近 7 天抽过的会降权，推着你每周吃到更多品种，接近「每周 25 种」。</p>
+          </article>
+          <article class="science-card">
+            <span class="science-num">04</span>
+            <h3>蛋白轮换</h3>
+            <p>禽、畜、鱼虾、蛋、豆交替出现，脂肪酸与氨基酸谱更全面。</p>
+          </article>
         </div>
       </div>
     </section>
