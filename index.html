@@ -37,6 +37,7 @@
         <a href="#seasons">时令</a>
         <a href="#benefits">营养</a>
         <a href="#diet">控卡</a>
+        <a href="#nutritionist">营养师</a>
         <a href="#compare">对比</a>
         <a href="#atlas">图鉴</a>
         <a href="#tips">挑选</a>
@@ -395,6 +396,105 @@
             <div class="diet-filter" id="diet-filter" role="group" aria-label="热量筛选"></div>
             <p class="diet-result" id="diet-result"></p>
             <div class="item-grid diet-grid" id="diet-grid"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- NUTRITIONIST -->
+    <section class="section nutritionist-section" id="nutritionist">
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Nutritionist</p>
+            <h2>私人营养师</h2>
+            <p class="section-desc">告诉它你是谁、想达成什么，生成一份可执行的饮食建议。内容为科普参考，不能代替医嘱。</p>
+          </div>
+        </div>
+
+        <div class="nutritionist-layout">
+          <form class="nutri-form" id="nutri-form">
+            <fieldset>
+              <legend>你的身份</legend>
+              <div class="nutri-options" data-group="role">
+                <label class="nutri-option"><input type="radio" name="role" value="elder" checked /><span>长辈</span></label>
+                <label class="nutri-option"><input type="radio" name="role" value="office" /><span>上班族</span></label>
+                <label class="nutri-option"><input type="radio" name="role" value="gym" /><span>健身党</span></label>
+                <label class="nutri-option"><input type="radio" name="role" value="student" /><span>学生</span></label>
+                <label class="nutri-option"><input type="radio" name="role" value="family" /><span>家庭主厨</span></label>
+              </div>
+            </fieldset>
+
+            <fieldset>
+              <legend>主要目标</legend>
+              <div class="nutri-options" data-group="goal">
+                <label class="nutri-option"><input type="radio" name="goal" value="balance" checked /><span>日常均衡</span></label>
+                <label class="nutri-option"><input type="radio" name="goal" value="fatloss" /><span>减脂控卡</span></label>
+                <label class="nutri-option"><input type="radio" name="goal" value="muscle" /><span>增肌补蛋白</span></label>
+                <label class="nutri-option"><input type="radio" name="goal" value="iron" /><span>补铁气色</span></label>
+                <label class="nutri-option"><input type="radio" name="goal" value="sugar" /><span>控糖稳态</span></label>
+                <label class="nutri-option"><input type="radio" name="goal" value="soft" /><span>软烂好消化</span></label>
+              </div>
+            </fieldset>
+
+            <fieldset>
+              <legend>特殊情况（可多选）</legend>
+              <div class="nutri-options multi" data-group="extra">
+                <label class="nutri-option"><input type="checkbox" name="extra" value="hypertension" /><span>血压偏高</span></label>
+                <label class="nutri-option"><input type="checkbox" name="extra" value="cholesterol" /><span>血脂偏高</span></label>
+                <label class="nutri-option"><input type="checkbox" name="extra" value="teeth" /><span>牙口不好</span></label>
+                <label class="nutri-option"><input type="checkbox" name="extra" value="digest" /><span>胃肠敏感</span></label>
+                <label class="nutri-option"><input type="checkbox" name="extra" value="veg" /><span>偏好素食</span></label>
+                <label class="nutri-option"><input type="checkbox" name="extra" value="time" /><span>时间紧张</span></label>
+              </div>
+            </fieldset>
+
+            <fieldset>
+              <legend>饮食偏好</legend>
+              <div class="nutri-options" data-group="pref">
+                <label class="nutri-option"><input type="radio" name="pref" value="none" checked /><span>不限</span></label>
+                <label class="nutri-option"><input type="radio" name="pref" value="light" /><span>少油清淡</span></label>
+                <label class="nutri-option"><input type="radio" name="pref" value="quick" /><span>快手省事</span></label>
+                <label class="nutri-option"><input type="radio" name="pref" value="share" /><span>好分好带</span></label>
+              </div>
+            </fieldset>
+
+            <div class="nutri-actions">
+              <button type="submit" class="btn-primary">生成我的饮食建议</button>
+              <button type="button" class="btn-ghost" id="nutri-reset">重新选择</button>
+            </div>
+          </form>
+
+          <div class="nutri-result" id="nutri-result">
+            <div class="nutri-empty" id="nutri-empty">
+              <div class="nutri-empty-icon">🥗</div>
+              <h3>还没生成建议</h3>
+              <p>在左侧选择身份、目标和特殊情况，点「生成我的饮食建议」。</p>
+            </div>
+            <div id="nutri-output" hidden>
+              <div class="nutri-headline">
+                <p class="eyebrow">Your Plan</p>
+                <h3 id="nutri-title">给你的饮食建议</h3>
+                <p id="nutri-summary"></p>
+              </div>
+              <div class="nutri-block">
+                <h4>今日重点</h4>
+                <ul id="nutri-focus" class="benefit-list"></ul>
+              </div>
+              <div class="nutri-block">
+                <h4>优先食材</h4>
+                <div class="item-grid nutri-item-grid" id="nutri-items"></div>
+              </div>
+              <div class="nutri-block">
+                <h4>一日示例</h4>
+                <div class="nutri-meals" id="nutri-meals"></div>
+              </div>
+              <div class="nutri-block">
+                <h4>注意事项</h4>
+                <ul id="nutri-warn" class="benefit-list"></ul>
+              </div>
+              <p class="nutri-disclaimer">以上为基于常见营养常识的科普建议，不能代替医生或注册营养师的个性化方案。</p>
+            </div>
           </div>
         </div>
       </div>

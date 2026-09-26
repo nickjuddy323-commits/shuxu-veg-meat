@@ -838,12 +838,20 @@
   }
 
   // ---------- card rendering ----------
+  function imgSrc(it) {
+    return "assets/img/" + it.id + ".png";
+  }
+
+  function itemImg(it, className) {
+    return `<img class="${className || "item-photo"}" src="${imgSrc(it)}" alt="${it.name}" loading="lazy" width="96" height="96" />`;
+  }
+
   function cardHTML(it) {
     const tags = (it.tags || []).slice(0, 3);
     return `
       <article class="item-card" data-id="${it.id}" tabindex="0" role="button" aria-label="查看${it.name}详情">
         <div class="item-card-top">
-          <div class="item-emoji">${it.emoji}</div>
+          <div class="item-emoji">${itemImg(it, "item-photo")}</div>
           <button class="fav-btn ${isFav(it.id) ? "is-active" : ""}" type="button" data-fav-id="${it.id}" aria-label="收藏${it.name}">${isFav(it.id) ? "♥" : "♡"}</button>
         </div>
         <h3>${it.name}</h3>
@@ -897,7 +905,10 @@
     if (!it) return;
     modalOpenId = id;
     const modal = $("#item-modal");
-    $("#modal-emoji").textContent = it.emoji;
+    const emojiEl = $("#modal-emoji");
+    if (emojiEl) {
+      emojiEl.innerHTML = itemImg(it, "modal-photo");
+    }
     $("#modal-title").textContent = it.name;
     $("#modal-en").textContent = it.en;
     $("#modal-seasons").textContent = typeName(it.type) + " · " + (it.seasons || []).map((s) => SEASON_META[s].name).join(" / ");
@@ -971,7 +982,7 @@
         const r = 38;
         const x = 50 + r * Math.cos(angle);
         const y = 50 + r * Math.sin(angle);
-        return `<button type="button" class="orbit-item" data-id="${it.id}" style="left:${x}%;top:${y}%" title="${it.name}">${it.emoji}</button>`;
+        return `<button type="button" class="orbit-item" data-id="${it.id}" style="left:${x}%;top:${y}%" title="${it.name}"><img src="${imgSrc(it)}" alt="${it.name}" loading="lazy" /></button>`;
       })
       .join("");
   }
@@ -979,7 +990,8 @@
   function renderDaily() {
     const list = itemsForMonth(currentMonth);
     const it = list[new Date().getDate() % Math.max(list.length, 1)] || ITEMS[0];
-    $("#daily-emoji").textContent = it.emoji;
+    const emojiEl = $("#daily-emoji");
+    if (emojiEl) emojiEl.innerHTML = itemImg(it, "daily-photo");
     $("#daily-name").textContent = it.name;
     $("#daily-brief").textContent = it.brief;
     const btn = $("#btn-daily");
@@ -1000,7 +1012,7 @@
     const list = ITEMS.filter((it) => it.months.some((m) => months.includes(m))).slice(0, 16);
     if (chips) {
       chips.innerHTML = list
-        .map((it) => `<button type="button" class="item-chip" data-id="${it.id}"><span>${it.emoji}</span>${it.name}</button>`)
+        .map((it) => `<button type="button" class="item-chip" data-id="${it.id}"><img class="chip-photo" src="${imgSrc(it)}" alt="" loading="lazy" />${it.name}</button>`)
         .join("");
     }
     document.body.dataset.season = season;
@@ -1200,7 +1212,7 @@
     const a = $("#compare-a");
     const b = $("#compare-b");
     if (!a || !b) return;
-    const opts = ITEMS.map((it) => `<option value="${it.id}">${it.emoji} ${it.name}</option>`).join("");
+    const opts = ITEMS.map((it) => `<option value="${it.id}">${it.name}（${typeName(it.type)}）</option>`).join("");
     a.innerHTML = opts;
     b.innerHTML = opts;
     a.value = "broccoli";
@@ -1234,8 +1246,8 @@
     const a = getItem($("#compare-a").value);
     const b = getItem($("#compare-b").value);
     if (!a || !b) return;
-    $("#compare-a-title").textContent = `${a.emoji} ${a.name}`;
-    $("#compare-b-title").textContent = `${b.emoji} ${b.name}`;
+    $("#compare-a-title").textContent = a.name;
+    $("#compare-b-title").textContent = b.name;
     const rows = [
       ["类别", typeName(a.type), typeName(b.type)],
       ["热量", `${a.kcal} kcal`, `${b.kcal} kcal`],
@@ -1336,7 +1348,7 @@
       .map(
         (it) => `
         <div class="basket-item">
-          <div class="bi-emoji">${it.emoji}</div>
+          <div class="bi-emoji"><img class="chip-photo" src="${imgSrc(it)}" alt="" loading="lazy" /></div>
           <div>
             <strong>${it.name}</strong>
             <span>${typeName(it.type)} · ${calLabel(it.calLevel)}</span>
@@ -1398,7 +1410,7 @@
     if (!box) return;
     box.innerHTML = ITEMS.map(
       (it) =>
-        `<button type="button" class="fridge-chip ${fridgeSelected.has(it.id) ? "is-on" : ""}" data-fridge="${it.id}">${it.emoji} ${it.name}</button>`
+        `<button type="button" class="fridge-chip ${fridgeSelected.has(it.id) ? "is-on" : ""}" data-fridge="${it.id}"><img class="chip-photo" src="${imgSrc(it)}" alt="" loading="lazy" />${it.name}</button>`
     ).join("");
 
     box.onclick = (e) => {
@@ -1510,7 +1522,7 @@
         void wheel.offsetWidth;
         wheel.classList.add("is-spinning");
       }
-      if (face) face.textContent = pick.emoji;
+      if (face) face.innerHTML = itemImg(pick, "spin-photo");
       if (resultBox) resultBox.hidden = false;
       renderCards(grid, [pick]);
       bindCardClicks(grid);
@@ -1559,7 +1571,7 @@
           <div class="meal-items">
             ${
               items.length
-                ? items.map((it) => `<div class="meal-item"><span>${it.emoji}</span><span>${it.name}</span></div>`).join("")
+                ? items.map((it) => `<div class="meal-item"><img class="chip-photo" src="${imgSrc(it)}" alt="" loading="lazy" /><span>${it.name}</span></div>`).join("")
                 : `<div class="meal-item" style="opacity:.55">未安排</div>`
             }
           </div>
@@ -1606,7 +1618,7 @@
       <h3 class="meal-picker-title">给${dayLabel}选 2–4 样（点选，可多选后关闭）</h3>
       <div class="meal-picker">
         ${ITEMS.map(
-          (it) => `<button type="button" class="meal-pick" data-meal-pick="${it.id}">${it.emoji} ${it.name}</button>`
+          (it) => `<button type="button" class="meal-pick" data-meal-pick="${it.id}"><img class="chip-photo" src="${imgSrc(it)}" alt="" loading="lazy" />${it.name}</button>`
         ).join("")}
       </div>
       <div class="fridge-actions" style="margin-top:1rem">
@@ -1693,6 +1705,256 @@
         if (spin) spin.hidden = which !== "spin";
       });
     });
+  }
+
+  // ---------- nutritionist ----------
+  const NUTRI_RULES = {
+    role: {
+      elder: {
+        title: "给长辈的温和饮食",
+        focus: [
+          "每餐都要有蛋白：鸡蛋、鱼、豆腐、去皮禽肉，帮助维持肌肉和体力。",
+          "烹调以蒸、炖、快炒为主，软烂好入口，少油炸和干硬大块肉。",
+          "蔬菜尽量占盘子一半，深色叶菜补叶酸和矿物质。",
+          "少量多餐更舒服，剩菜充分加热再吃。"
+        ],
+        prefer: ["egg", "tofu", "salmon", "chicken-leg", "pumpkin", "yam", "spinach", "winter-melon"],
+        avoid: ["pork-belly", "pork-liver"],
+        warn: [
+          "服药期间注意：深绿叶菜保持摄入稳定（如华法林），补铁补钙与药物错开。",
+          "少腌制、少咸菜，血压偏高时更要控盐。",
+          "补蛋白别只喝粥，走路没劲往往是蛋白不够。"
+        ],
+        meals: ["早餐：蒸蛋 + 软粥 + 焯菠菜", "午餐：清蒸鱼 + 软米饭 + 炖冬瓜", "加餐：无糖豆浆", "晚餐：山药炖鸡腿 + 烂白菜"]
+      },
+      office: {
+        title: "给上班族的稳态饮食",
+        focus: [
+          "每餐一掌心蛋白 + 一拳主食 + 两拳蔬菜，结构稳比节食更持久。",
+          "外卖选「少油少盐、多蔬菜」，主食换杂粮更好。",
+          "工位备即食鸡胸、卤蛋、小番茄、无糖酸奶，减少奶茶炸鸡。",
+          "先吃菜再吃肉最后主食，血糖更稳，下午不容易犯困。"
+        ],
+        prefer: ["chicken-breast", "broccoli", "tomato", "egg", "tofu", "cucumber", "shrimp", "soy-milk"],
+        avoid: ["pork-belly"],
+        warn: [
+          "警惕隐形油糖：沙拉酱、糖醋汁、干锅油泡都会让「清淡」变重口。",
+          "熬夜夜宵选水煮蛋、黄瓜，别用辣条泡面顶正餐。",
+          "久坐更要保证蛋白，否则掉的是肌肉不是脂肪。"
+        ],
+        meals: ["早餐：无糖豆浆 + 鸡蛋 + 全麦面包", "午餐：鸡胸沙拉 / 番茄炒蛋 + 杂粮饭", "加餐：小番茄或黄瓜", "晚餐：清炒西兰花 + 蒸鱼或豆腐"]
+      },
+      gym: {
+        title: "给健身党的高蛋白饮食",
+        focus: [
+          "每公斤体重约 1.2–2.0 克蛋白，分到三餐更利于吸收。",
+          "练后 30–60 分钟补蛋白 + 少量碳水：鸡胸/鱼/蛋 + 米饭红薯。",
+          "增肌别怕吃够；减脂优先高蛋白低油烹调，少油炸红烧。",
+          "蔬菜补纤维和微量营养，训练日也不能省。"
+        ],
+        prefer: ["chicken-breast", "egg", "beef-shank", "shrimp", "salmon", "tofu", "broccoli", "potato"],
+        avoid: ["pork-belly"],
+        warn: [
+          "蛋白粉是补充不是替代，正餐吃不够再补。",
+          "只水煮鸡胸很难坚持，用香料、蒸烤、凉拌换口味。",
+          "减脂期也别完全断碳，训练表现和恢复都需要能量。"
+        ],
+        meals: ["早餐：鸡蛋 2 个 + 燕麦 + 无糖豆浆", "午餐：鸡胸/牛腱 + 米饭 + 西兰花", "练后：鸡蛋或鸡胸 + 香蕉/红薯", "晚餐：烤三文鱼 + 大量蔬菜"]
+      },
+      student: {
+        title: "给学生的性价比饮食",
+        focus: [
+          "食堂点「一荤一素一豆」，比零食代餐更划算也更扛饿。",
+          "鸡蛋、豆腐、冻鸡胸、当季根茎菜是性价比之王。",
+          "考试周要稳补能：鸡蛋、全麦、深绿叶菜，少辣条泡面。",
+          "宿舍没厨房：茶叶蛋、即食鸡胸、盒装豆腐、小番茄是好朋友。"
+        ],
+        prefer: ["egg", "tofu", "potato", "cabbage", "tomato", "chicken-breast", "dried-beancurd", "soy-milk"],
+        avoid: ["pork-belly"],
+        warn: [
+          "叶菜按 2–3 天买，肉类分装冷冻，别反复化冻。",
+          "拼单耐放食材：鸡蛋、土豆洋葱、豆腐；娇气菜自己买小份。",
+          "蛋白不够会掉肌肉、没精神，别只吃泡面凑合。"
+        ],
+        meals: ["早餐：茶叶蛋 + 无糖豆浆", "午餐：食堂一荤一素一豆 + 米饭", "加餐：小番茄 / 黄瓜", "晚餐：番茄鸡蛋面 + 焯青菜"]
+      },
+      family: {
+        title: "给家庭主厨的一桌搭配",
+        focus: [
+          "一桌菜尽量覆盖：深色蔬菜 + 优质蛋白 + 豆制品 + 主食。",
+          "清蒸、炖、快炒轮换，比顿顿红烧更轻负担。",
+          "叶菜先吃先买，根茎耐放可以排后半周。",
+          "给孩子和老人单独留软烂一份，大人的口味更灵活。"
+        ],
+        prefer: ["tomato", "broccoli", "carrot", "egg", "tofu", "chicken-leg", "salmon", "cabbage"],
+        avoid: [],
+        warn: [
+          "生熟砧板分开，肉要彻底做熟。",
+          "少给孩子喝汤泡饭，蛋白和菜要真正吃进去。",
+          "剩菜尽快冷藏，下一顿充分加热。"
+        ],
+        meals: ["早餐：鸡蛋饼 + 豆浆 + 番茄", "午餐：番茄牛腩 + 清炒时蔬 + 米饭", "加餐：水果或无糖酸奶", "晚餐：清蒸鱼 + 豆腐煲 + 两样青菜"]
+      }
+    },
+    goal: {
+      balance: {
+        label: "日常均衡",
+        focus: ["每天蔬菜 300–500 克，深色占一半。", "蛋白食物约 120–200 克生重，分散到三餐。", "主食粗细搭配，别为了减肥完全不吃碳水。"],
+        bias: ["egg", "tofu", "broccoli", "tomato", "chicken-breast", "carrot", "salmon", "cabbage"],
+        warn: ["均衡比「完美食谱」更重要，长期吃得下才能坚持。"]
+      },
+      fatloss: {
+        label: "减脂控卡",
+        focus: ["用蒸煮炖代替油炸红烧，总热量立省一截。", "蔬菜放大、主食减半换杂粮、肥肉去掉。", "先菜后肉再主食，饱腹感更强。"],
+        bias: ["cucumber", "winter-melon", "lettuce", "chicken-breast", "shrimp", "tofu", "broccoli", "celery"],
+        warn: ["别把「吃得少」当成唯一标准，蛋白不够会掉肌肉。", "沙拉酱、果汁、奶茶是隐形热量大户。"]
+      },
+      muscle: {
+        label: "增肌补蛋白",
+        focus: ["每餐都要有优质蛋白，练后尤其关键。", "增肌期热量要有盈余，别只吃草。", "睡眠和训练强度同样决定增长。"],
+        bias: ["chicken-breast", "egg", "beef-shank", "salmon", "shrimp", "tofu", "potato", "soy-milk"],
+        warn: ["蛋白粉补充，不是主食替代品。"]
+      },
+      iron: {
+        label: "补铁气色",
+        focus: ["红肉、动物血、肝脏是好铁源，适量安排。", "搭配维 C（彩椒、番茄、西兰花）促进铁吸收。", "素食者更需要豆制品 + 深绿叶菜的组合。"],
+        bias: ["pork-tenderloin", "beef-shank", "pork-liver", "spinach", "pepper", "tomato", "broccoli", "lamb-leg"],
+        warn: ["猪肝不必频繁大量吃，每周 1–2 次即可。", "补铁同时避免大量浓茶咖啡同餐。"]
+      },
+      sugar: {
+        label: "控糖稳态",
+        focus: ["主食减量换杂粮，蔬菜和蛋白打底。", "避免糖醋、勾芡、果汁、甜酱。", "进餐顺序：菜 → 肉 → 主食，血糖更平稳。"],
+        bias: ["broccoli", "cucumber", "celery", "tofu", "chicken-breast", "egg", "spinach", "soy-milk"],
+        warn: ["具体方案遵医嘱，尤其是正在用药的糖友。", "「无糖」食品也可能有脂肪和碳水，要看配料表。"]
+      },
+      soft: {
+        label: "软烂好消化",
+        focus: ["蒸软、炖烂、切细，减少咀嚼和胃负担。", "从少量开始，避开过油过辣过冷过热。", "豆类胀气可先选豆腐豆干而非整粒黄豆。"],
+        bias: ["pumpkin", "yam", "tofu", "egg", "chicken-leg", "winter-melon", "lotus", "soy-milk"],
+        warn: ["胃炎、反酸、术后饮食请遵医嘱调整。"]
+      }
+    },
+    extra: {
+      hypertension: {
+        label: "血压偏高",
+        tips: ["少盐少腌制，用香料葱姜蒜提味。", "多吃钾丰富的蔬菜，少吃咸菜酱料。"]
+      },
+      cholesterol: {
+        label: "血脂偏高",
+        tips: ["少肥肉、动物皮、油炸；好脂肪来自鱼和坚果。", "烹调少油，多蒸煮炖。"]
+      },
+      teeth: {
+        label: "牙口不好",
+        tips: ["优先软烂：蒸蛋、鱼片、肉末、炖到脱骨的鸡腿。", "避免干硬大块肉和生冷脆硬生食。"]
+      },
+      digest: {
+        label: "胃肠敏感",
+        tips: ["少量多餐，肉类切细炖烂。", "避免空腹太酸太辣、过量豆类胀气。"]
+      },
+      veg: {
+        label: "偏好素食",
+        tips: ["蛋白靠豆腐、豆干、无糖豆浆、鸡蛋（若可）。", "注意铁、B12、钙的搭配，必要时咨询营养师。"]
+      },
+      time: {
+        label: "时间紧张",
+        tips: ["备好即食鸡胸、卤蛋、盒装豆腐、可生食蔬菜。", "周末一次炖好分装冷冻，工作日复热。"]
+      }
+    },
+    pref: {
+      none: { label: "不限" },
+      light: {
+        label: "少油清淡",
+        tips: ["清蒸、白灼、快炒、砂锅优先。"]
+      },
+      quick: {
+        label: "快手省事",
+        tips: ["10 分钟方案：鸡蛋、即食鸡胸、豆腐、凉拌黄瓜、快炒叶菜。"]
+      },
+      share: {
+        label: "好分好带",
+        tips: ["卤牛腱切片、茶叶蛋、分装炖菜、耐放根茎。"]
+      }
+    }
+  };
+
+  function renderNutritionist() {
+    const form = $("#nutri-form");
+    if (!form) return;
+
+    form.onsubmit = (e) => {
+      e.preventDefault();
+      const data = new FormData(form);
+      const role = data.get("role") || "office";
+      const goal = data.get("goal") || "balance";
+      const extras = data.getAll("extra");
+      const pref = data.get("pref") || "none";
+
+      const roleRule = NUTRI_RULES.role[role] || NUTRI_RULES.role.office;
+      const goalRule = NUTRI_RULES.goal[goal] || NUTRI_RULES.goal.balance;
+      const prefRule = NUTRI_RULES.pref[pref] || NUTRI_RULES.pref.none;
+
+      const title = roleRule.title + " · " + goalRule.label;
+      const summary =
+        "结合「" +
+        (roleRule.title.replace("给", "").replace("的", "")) +
+        "」和「" +
+        goalRule.label +
+        "」，下面是可直接落地的重点、优先食材与一日示例。";
+
+      const focus = [...roleRule.focus, ...goalRule.focus];
+      if (prefRule.tips) focus.push(...prefRule.tips);
+      extras.forEach((ex) => {
+        const rule = NUTRI_RULES.extra[ex];
+        if (rule && rule.tips) focus.push(...rule.tips);
+      });
+
+      const preferIds = [...new Set([...(roleRule.prefer || []), ...(goalRule.bias || [])])];
+      let items = preferIds.map(getItem).filter(Boolean);
+      if (role === "student" || extras.includes("veg")) {
+        items = items.filter((it) => extras.includes("veg") ? it.type !== "meat" || it.id === "egg" : true);
+      }
+      if (goal === "fatloss") {
+        items.sort((a, b) => a.kcal - b.kcal);
+      } else if (goal === "muscle") {
+        items.sort((a, b) => b.protein - a.protein);
+      }
+      items = items.slice(0, 6);
+
+      const warn = [...(roleRule.warn || []), ...(goalRule.warn || [])];
+      extras.forEach((ex) => {
+        const rule = NUTRI_RULES.extra[ex];
+        if (rule && rule.tips) warn.push(...rule.tips);
+      });
+
+      const meals = roleRule.meals || [];
+
+      $("#nutri-empty").hidden = true;
+      const out = $("#nutri-output");
+      out.hidden = false;
+      $("#nutri-title").textContent = title;
+      $("#nutri-summary").textContent = summary;
+      $("#nutri-focus").innerHTML = focus.map((f) => `<li>${f}</li>`).join("");
+      renderCards($("#nutri-items"), items);
+      bindCardClicks($("#nutri-items"));
+      $("#nutri-meals").innerHTML = meals
+        .map((m) => {
+          const [k, v] = m.split("：");
+          return `<div class="nutri-meal-row"><strong>${k}</strong><span>${v}</span></div>`;
+        })
+        .join("");
+      $("#nutri-warn").innerHTML = warn.map((w) => `<li>${w}</li>`).join("");
+
+      out.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    };
+
+    const reset = $("#nutri-reset");
+    if (reset) {
+      reset.onclick = () => {
+        form.reset();
+        $("#nutri-output").hidden = true;
+        $("#nutri-empty").hidden = false;
+      };
+    }
   }
 
   // ---------- random / font / nav / to-top ----------
@@ -1799,6 +2061,7 @@
     bindPlayTabs();
     renderMealPlan();
     bindMealActions();
+    renderNutritionist();
 
     updateHeroStats();
     saveFavorites();
